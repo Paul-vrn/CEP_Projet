@@ -27,7 +27,9 @@ architecture RTL of CPU_PC is
         S_Init,
         S_Pre_Fetch,
         S_Fetch,
-        S_Decode
+        S_Decode,
+        S_LUI,
+        S_ADDI
     );
 
     signal state_d, state_q : State_type;
@@ -70,7 +72,7 @@ begin
 
         cmd.TO_PC_Y_sel       <= UNDEFINED;
 
-        cmd.AD_we             <= 'U';
+        cmd.AD_we               <= 'U';
         cmd.AD_Y_sel          <= UNDEFINED;
 
         cmd.IR_we             <= 'U';
@@ -117,11 +119,45 @@ begin
                 state_d <= S_Decode;
 
             when S_Decode =>
+                if status.IR(6 downto 0) = "0110111" then
+                    cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                    cmd.PC_sel <= PC_from_pc;
+                    cmd.PC_we <= '1';
+                    state_d <= S_LUI;
+                elsif status.IR(6 downto 0) = "0010011" then
+                    cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                    cmd.PC_sel <= PC_from_pc;
+                    cmd.PC_we <= '1';                    
+                    state_d <= S_ADDI;
+                else 
+                    state_d <= S_Error;
+                end if;
 
-                state_d <= S_Error;
+            when S_LUI =>
+                -- rd <- ImmU + 0
+                cmd.PC_X_sel <= PC_X_cst_x00;
+                cmd.PC_Y_sel <= PC_Y_immU;
+                cmd.RF_we <= '1';
+                cmd.DATA_sel <= DATA_from_pc;
+                -- lecture mem[PC]
+                cmd.ADDR_sel <= ADDR_from_pc;
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+                -- next state
+                state_d <= S_Fetch;
 
-                -- Décodage effectif des instructions,
-                -- à compléter par vos soins
+            when S_ADDI =>
+                cmd.ALU_op <= ALU_plus;
+                cmd.ALU_Y_sel <= ALU_Y_immI;
+                cmd.RF_we <= '1';
+                
+                cmd.DATA_sel <= DATA_from_alu;
+                -- lecture mémoire
+                cmd.ADDR_sel <= ADDR_from_pc;
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+                -- next state
+                state_d <= S_Fetch;
 
 ---------- Instructions avec immediat de type U ----------
 
