@@ -30,7 +30,8 @@ architecture RTL of CPU_PC is
         S_Decode,
         S_LUI,
         S_ADDI,
-        S_ADD
+        S_ADD_SUB,
+        S_SLL
     );
 
     signal state_d, state_q : State_type;
@@ -120,24 +121,32 @@ begin
                 state_d <= S_Decode;
 
             when S_Decode =>
-                if status.IR(6 downto 0) = "0110111" then
-                    cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
-                    cmd.PC_sel <= PC_from_pc;
-                    cmd.PC_we <= '1';
-                    state_d <= S_LUI;
-                elsif status.IR(6 downto 0) = "0010011" then
-                    cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
-                    cmd.PC_sel <= PC_from_pc;
-                    cmd.PC_we <= '1';                    
-                    state_d <= S_ADDI;
-                elsif status.IR(6 downto 0) = "0110011" then
-                    cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
-                    cmd.PC_sel <= PC_from_pc;
-                    cmd.PC_we <= '1';                    
-                    state_d <= S_ADD;
-                else 
-                    state_d <= S_Error;
-                end if;
+                case status.IR(6 downto 0) is 
+                    when "0110111" =>
+                        cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                        cmd.PC_sel <= PC_from_pc;
+                        cmd.PC_we <= '1';
+                        state_d <= S_LUI;
+                    when "0010011" =>
+                        cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                        cmd.PC_sel <= PC_from_pc;
+                        cmd.PC_we <= '1';                    
+                        state_d <= S_ADDI;
+                    when "0110011" =>
+                        cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                        cmd.PC_sel <= PC_from_pc;
+                        cmd.PC_we <= '1';
+                        case status.IR(14 downto 12) is
+                            when "000" => 
+                                state_d <= S_ADD_SUB;
+                            when "001" =>
+                                state_d <= S_SLL;
+                            when others => 
+                                state_d <= S_Error;
+                        end case;
+                    when others => 
+                        state_d <= S_Error;
+                end case;
 
             when S_LUI =>
                 -- rd <- ImmU + 0
@@ -156,7 +165,6 @@ begin
                 cmd.ALU_op <= ALU_plus;
                 cmd.ALU_Y_sel <= ALU_Y_immI;
                 cmd.RF_we <= '1';
-                
                 cmd.DATA_sel <= DATA_from_alu;
                 -- lecture mémoire
                 cmd.ADDR_sel <= ADDR_from_pc;
@@ -164,8 +172,12 @@ begin
                 cmd.mem_we <= '0';
                 -- next state
                 state_d <= S_Fetch;
-            when S_ADD =>
-                cmd.ALU_op <= ALU_plus;
+            when S_ADD_SUB =>
+                if status.IR(31 downto 25) = "0000000" then
+                    cmd.ALU_op <= ALU_plus;
+                elsif status.IR(31 downto 25) = "0100000" then
+                    cmd.ALU_op <= ALU_minus;
+                end if;
                 cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
                 cmd.RF_we <= '1';
                 cmd.DATA_sel <= DATA_from_alu;
@@ -175,8 +187,20 @@ begin
                 cmd.mem_we <= '0';
                 -- next state
                 state_d <= S_Fetch;
-                
----------- Instructions avec immediat de type U ----------
+            when S_SLL => 
+                cmd.SHIFTER_op <= SHIFT_ll;
+                cmd.SHIFTER_Y_sel <= SHIFTER_Y_rs2;
+
+                cmd.RF_we <= '1';
+                cmd.DATA_sel <= DATA_from_shifter;
+
+                cmd.ADDR_sel <= ADDR_from_pc;
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+                -- next state
+                state_d <= S_Fetch;
+            
+        ---------- Instructions avec immediat de type U ----------
 
 ---------- Instructions arithmétiques et logiques ----------
 
