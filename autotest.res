@@ -1,0 +1,14 @@
+addi        PASSED
+add         PASSED
+auipc       PASSED
+beq         PASSED
+bge         PASSED
+bgeu        PASSED
+blt         PASSED
+bltu        PASSED
+bne         PASSED
+lui         PASSED
+rebouclage  PASSED
+sll         PASSED
+slt         PASSED
+sub         PASSED
