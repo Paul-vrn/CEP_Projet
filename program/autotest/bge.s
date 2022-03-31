@@ -1,4 +1,5 @@
 # TAG = bge
+# rs1 ≥ rs2 ⇒ pc ← pc + cst
 	.text
 test1:
 	lui x31, 0

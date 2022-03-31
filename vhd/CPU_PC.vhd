@@ -225,13 +225,13 @@ begin
                 state_d <= S_Pre_Fetch;
             when S_BRANCH => 
                 if  ((status.IR(14 downto 12) = "000" -- beq
-                    or status.IR(14 downto 12) = "100" -- blt
-                    or status.IR(14 downto 12) = "110") -- bltu
+                    or status.IR(14 downto 12) = "101" -- blt
+                    or status.IR(14 downto 12) = "111") -- bltu
                     and status.jcond) 
                     or
                     ((status.IR(14 downto 12) = "001" -- bne
-                    or status.IR(14 downto 12) = "101" -- bge
-                    or status.IR(14 downto 12) = "111") -- bgeu
+                    or status.IR(14 downto 12) = "100" -- bge
+                    or status.IR(14 downto 12) = "110") -- bgeu
                     and not status.jcond)
                     then
                     cmd.TO_PC_Y_sel <= TO_PC_Y_immB;
