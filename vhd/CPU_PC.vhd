@@ -30,11 +30,12 @@ architecture RTL of CPU_PC is
         S_Decode,
         S_LUI,
         S_ADDI,
-        S_ADD_SUB,
+        S_ARITHMETIQUE,
         S_SLL,
         S_AUIPC,
-        S_BEQ,
-        S_SLT
+        S_BRANCH,
+        S_SLT,
+        S_LOGIC
     );
 
     signal state_d, state_q : State_type;
@@ -141,7 +142,7 @@ begin
                         cmd.PC_we <= '1';
                         case status.IR(14 downto 12) is
                             when "000" => 
-                                state_d <= S_ADD_SUB;
+                                state_d <= S_ARITHMETIQUE;
                             when "001" =>
                                 state_d <= S_SLL;
                             when "010" =>
@@ -152,7 +153,7 @@ begin
                     when "0010111" =>
                         state_d <= S_AUIPC;
                     when "1100011" => 
-                        state_d <= S_BEQ;
+                        state_d <= S_BRANCH;
                     when others => 
                         state_d <= S_Error;
                 end case;
@@ -181,7 +182,7 @@ begin
                 cmd.mem_we <= '0';
                 -- next state
                 state_d <= S_Fetch;
-            when S_ADD_SUB =>
+            when S_ARITHMETIQUE =>
                 if status.IR(31 downto 25) = "0000000" then
                     cmd.ALU_op <= ALU_plus;
                 elsif status.IR(31 downto 25) = "0100000" then
@@ -222,17 +223,26 @@ begin
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.mem_we <= '0';
                 state_d <= S_Pre_Fetch;
-            when S_BEQ => 
+            when S_BRANCH => 
+                if  ((status.IR(14 downto 12) = "000" -- beq
+                    or status.IR(14 downto 12) = "100" -- blt
+                    or status.IR(14 downto 12) = "110") -- bltu
+                    and status.jcond) 
+                    or
+                    ((status.IR(14 downto 12) = "001" -- bne
+                    or status.IR(14 downto 12) = "101" -- bge
+                    or status.IR(14 downto 12) = "111") -- bgeu
+                    and not status.jcond)
+                    then
+                    cmd.TO_PC_Y_sel <= TO_PC_Y_immB;
+                else
+                    cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                end if;
                 cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
                 cmd.DATA_sel <= DATA_from_slt;
                 cmd.PC_we <= '1';
                 cmd.mem_we <= '0';
                 cmd.ADDR_sel <= ADDR_from_pc;
-                if status.jcond then
-                    cmd.TO_PC_Y_sel <= TO_PC_Y_immB;
-                else
-                    cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
-                end if;
                 cmd.PC_sel <= PC_from_pc;
                 state_d <= S_Pre_Fetch;
             when S_SLT =>
