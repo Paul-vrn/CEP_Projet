@@ -134,19 +134,32 @@ begin
                     when "0010011" =>
                         cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
                         cmd.PC_sel <= PC_from_pc;
-                        cmd.PC_we <= '1';                    
-                        state_d <= S_ADDI;
+                        cmd.PC_we <= '1';
+                        case status.IR(14 downto 12) is
+                            when "000" =>
+                                state_d <= S_ADDI;
+                            when "010" | "011" => -- slti | sltiu
+                                state_d <= S_SLT;
+                            when "100" | "110" | "111" => -- xori | ori | andi
+                                state_d <= S_LOGIC;
+                            when others =>
+                                state_d <= S_Error;
+                            end case;
                     when "0110011" =>
                         cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
                         cmd.PC_sel <= PC_from_pc;
                         cmd.PC_we <= '1';
                         case status.IR(14 downto 12) is
-                            when "000" => 
+                            when "000" => -- add et sub
                                 state_d <= S_ARITHMETIQUE;
                             when "001" =>
                                 state_d <= S_SLL;
-                            when "010" =>
+                            when "010" | "011" => -- slt | sltu
                                 state_d <= S_SLT;
+                            when "100" | "110" | "111" => -- xor | or | and
+                                state_d <= S_LOGIC;
+                            when "101" => -- sra
+                                state_d <= S_BRANCH;
                             when others => 
                                 state_d <= S_Error;
                         end case;
@@ -158,6 +171,30 @@ begin
                         state_d <= S_Error;
                 end case;
 
+            when S_LOGIC =>
+                if status.IR(6 downto 0)= "0010011" then
+                    cmd.ALU_Y_sel <= ALU_Y_immI;
+                    else
+                    cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
+                end if;
+                -- "100" | "110" | "111" => -- xor | or | and     
+                if (status.IR(14 downto 12) = "100") then
+                    cmd.LOGICAL_op <= LOGICAL_xor;
+                elsif (status.IR(14 downto 12) = "110") then
+                    cmd.LOGICAL_op <= LOGICAL_or;
+                elsif (status.IR(14 downto 12) = "111") then
+                    cmd.LOGICAL_op <= LOGICAL_and;
+                else
+                    state_d <= S_Error;
+                end if; 
+                cmd.RF_we <= '1';
+                cmd.DATA_sel <= DATA_from_logical;
+                -- lecture mém
+                cmd.ADDR_sel <= ADDR_from_pc;
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+                -- next state
+                state_d <= S_Fetch;    
             when S_LUI =>
                 -- rd <- ImmU + 0
                 cmd.PC_X_sel <= PC_X_cst_x00;

@@ -1,5 +1,7 @@
 addi        PASSED
 add         PASSED
+andi        PASSED
+and         PASSED
 auipc       PASSED
 beq         PASSED
 bge         PASSED
@@ -8,7 +10,11 @@ blt         PASSED
 bltu        PASSED
 bne         PASSED
 lui         PASSED
+ori         PASSED
+or          PASSED
 rebouclage  PASSED
 sll         PASSED
 slt         PASSED
 sub         PASSED
+xori        PASSED
+xor         PASSED
