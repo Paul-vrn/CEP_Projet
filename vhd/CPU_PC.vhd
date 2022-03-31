@@ -32,7 +32,9 @@ architecture RTL of CPU_PC is
         S_ADDI,
         S_ADD_SUB,
         S_SLL,
-        S_AUIPC
+        S_AUIPC,
+        S_BEQ,
+        S_SLT
     );
 
     signal state_d, state_q : State_type;
@@ -142,11 +144,15 @@ begin
                                 state_d <= S_ADD_SUB;
                             when "001" =>
                                 state_d <= S_SLL;
+                            when "010" =>
+                                state_d <= S_SLT;
                             when others => 
                                 state_d <= S_Error;
                         end case;
                     when "0010111" =>
                         state_d <= S_AUIPC;
+                    when "1100011" => 
+                        state_d <= S_BEQ;
                     when others => 
                         state_d <= S_Error;
                 end case;
@@ -216,8 +222,31 @@ begin
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.mem_we <= '0';
                 state_d <= S_Pre_Fetch;
+            when S_BEQ => 
+                cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
+                cmd.DATA_sel <= DATA_from_slt;
+                cmd.PC_we <= '1';
+                cmd.mem_we <= '0';
+                cmd.ADDR_sel <= ADDR_from_pc;
+                if status.jcond then
+                    cmd.TO_PC_Y_sel <= TO_PC_Y_immB;
+                else
+                    cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                end if;
+                cmd.PC_sel <= PC_from_pc;
+                state_d <= S_Pre_Fetch;
+            when S_SLT =>
+                cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
+                cmd.DATA_sel <= DATA_from_slt;
+                cmd.RF_we <= '1';
+                cmd.ADDR_sel <= ADDR_from_pc;
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+                state_d <= S_Fetch;
 
-        ---------- Instructions avec immediat de type U ----------
+
+
+---------- Instructions avec immediat de type U ----------
 
 ---------- Instructions arithmétiques et logiques ----------
 
