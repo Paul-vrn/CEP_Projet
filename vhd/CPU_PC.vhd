@@ -291,6 +291,9 @@ begin
                 else
                     cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
                 end if;
+                if status.IR(14 downto 12) = "011" or status.IR(14 downto 12) = "111" then
+                    cmd.RF_SIGN_enable <= '0';
+                end if;
                 cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
                 cmd.DATA_sel <= DATA_from_slt;
                 cmd.PC_we <= '1';
@@ -307,6 +310,10 @@ begin
             else 
                 state_d <= S_Error;
             end if;
+            if status.IR(14 downto 12) = "011" then
+                cmd.RF_SIGN_enable <= '0';
+            end if;
+
             cmd.DATA_sel <= DATA_from_slt;
             cmd.RF_we <= '1';
             cmd.ADDR_sel <= ADDR_from_pc;
