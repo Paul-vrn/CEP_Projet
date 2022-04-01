@@ -31,7 +31,7 @@ architecture RTL of CPU_PC is
         S_LUI,
         S_ADDI,
         S_ARITHMETIQUE,
-        S_SLL,
+        S_DECALAGE,
         S_AUIPC,
         S_BRANCH,
         S_SLT,
@@ -142,6 +142,8 @@ begin
                                 state_d <= S_SLT;
                             when "100" | "110" | "111" => -- xori | ori | andi
                                 state_d <= S_LOGIC;
+                            when "001" | "101" => -- slli | (srai | srli)
+                                state_d <= S_DECALAGE;
                             when others =>
                                 state_d <= S_Error;
                             end case;
@@ -152,14 +154,12 @@ begin
                         case status.IR(14 downto 12) is
                             when "000" => -- add et sub
                                 state_d <= S_ARITHMETIQUE;
-                            when "001" =>
-                                state_d <= S_SLL;
+                            when "001" | "101" => -- sll | (sra | srl)
+                                state_d <= S_DECALAGE;
                             when "010" | "011" => -- slt | sltu
                                 state_d <= S_SLT;
                             when "100" | "110" | "111" => -- xor | or | and
                                 state_d <= S_LOGIC;
-                            when "101" => -- sra
-                                state_d <= S_BRANCH;
                             when others => 
                                 state_d <= S_Error;
                         end case;
@@ -235,10 +235,24 @@ begin
                 -- next state
                 state_d <= S_Fetch;
                 
-            when S_SLL => 
-                cmd.SHIFTER_op <= SHIFT_ll;
-                cmd.SHIFTER_Y_sel <= SHIFTER_Y_rs2;
-
+            when S_DECALAGE =>
+                if status.IR(6 downto 0)= "0010011" then
+                    cmd.SHIFTER_Y_sel <= SHIFTER_Y_ir_sh;
+                else
+                    cmd.SHIFTER_Y_sel <= SHIFTER_Y_rs2;
+                end if;
+--                when "001" | "101" | => -- sll | (sra | srl)
+                if (status.IR(14 downto 12) = "001") then
+                    cmd.SHIFTER_op <= SHIFT_ll;
+                elsif (status.IR(14 downto 12) = "101") then
+                    if (status.IR(31 downto 25) = "0100000") then
+                        cmd.SHIFTER_op <= SHIFT_ra;
+                    elsif (status.IR(31 downto 25) = "0000000") then
+                        cmd.SHIFTER_op <= SHIFT_rl;
+                    else
+                        state_d <= S_Error;
+                    end if;
+                end if;
                 cmd.RF_we <= '1';
                 cmd.DATA_sel <= DATA_from_shifter;
 

@@ -13,8 +13,13 @@ lui         PASSED
 ori         PASSED
 or          PASSED
 rebouclage  PASSED
+slli        PASSED
 sll         PASSED
 slt         PASSED
+srai        PASSED
+sra         PASSED
+srli        PASSED
+srl         PASSED
 sub         PASSED
 xori        PASSED
 xor         PASSED
