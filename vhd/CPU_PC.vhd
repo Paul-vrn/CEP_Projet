@@ -34,7 +34,7 @@ architecture RTL of CPU_PC is
         S_DECALAGE,
         S_AUIPC,
         S_BRANCH,
-        S_SLT,
+        S_SETS,
         S_LOGIC
     );
 
@@ -139,7 +139,7 @@ begin
                             when "000" =>
                                 state_d <= S_ADDI;
                             when "010" | "011" => -- slti | sltiu
-                                state_d <= S_SLT;
+                                state_d <= S_SETS;
                             when "100" | "110" | "111" => -- xori | ori | andi
                                 state_d <= S_LOGIC;
                             when "001" | "101" => -- slli | (srai | srli)
@@ -157,7 +157,7 @@ begin
                             when "001" | "101" => -- sll | (sra | srl)
                                 state_d <= S_DECALAGE;
                             when "010" | "011" => -- slt | sltu
-                                state_d <= S_SLT;
+                                state_d <= S_SETS;
                             when "100" | "110" | "111" => -- xor | or | and
                                 state_d <= S_LOGIC;
                             when others => 
@@ -174,7 +174,7 @@ begin
             when S_LOGIC =>
                 if status.IR(6 downto 0)= "0010011" then
                     cmd.ALU_Y_sel <= ALU_Y_immI;
-                    else
+                else
                     cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
                 end if;
                 -- "100" | "110" | "111" => -- xor | or | and     
@@ -236,10 +236,12 @@ begin
                 state_d <= S_Fetch;
                 
             when S_DECALAGE =>
-                if status.IR(6 downto 0)= "0010011" then
+                if (status.IR(6 downto 0) = "0010011") then
                     cmd.SHIFTER_Y_sel <= SHIFTER_Y_ir_sh;
-                else
+                elsif (status.IR(6 downto 0) = "0110011") then
                     cmd.SHIFTER_Y_sel <= SHIFTER_Y_rs2;
+                else 
+                    state_d <= S_Error;
                 end if;
 --                when "001" | "101" | => -- sll | (sra | srl)
                 if (status.IR(14 downto 12) = "001") then
@@ -296,14 +298,21 @@ begin
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.PC_sel <= PC_from_pc;
                 state_d <= S_Pre_Fetch;
-            when S_SLT =>
+
+            when S_SETS => 
+            if status.IR(6 downto 0)= "0010011" then
+                cmd.ALU_Y_sel <= ALU_Y_immI;
+            elsif status.IR(6 downto 0)= "0110011" then
                 cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
-                cmd.DATA_sel <= DATA_from_slt;
-                cmd.RF_we <= '1';
-                cmd.ADDR_sel <= ADDR_from_pc;
-                cmd.mem_ce <= '1';
-                cmd.mem_we <= '0';
-                state_d <= S_Fetch;
+            else 
+                state_d <= S_Error;
+            end if;
+            cmd.DATA_sel <= DATA_from_slt;
+            cmd.RF_we <= '1';
+            cmd.ADDR_sel <= ADDR_from_pc;
+            cmd.mem_ce <= '1';
+            cmd.mem_we <= '0';
+            state_d <= S_Fetch;
 
 
 
@@ -320,7 +329,7 @@ begin
 ---------- Instructions d'accès aux CSR ----------
 
             when others => null;
-        end case;
+            end case;
 
     end process FSM_comb;
 

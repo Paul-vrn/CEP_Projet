@@ -15,7 +15,10 @@ or          PASSED
 rebouclage  PASSED
 slli        PASSED
 sll         PASSED
+slti        PASSED
+sltiu       PASSED
 slt         PASSED
+sltu        PASSED
 srai        PASSED
 sra         PASSED
 srli        PASSED
