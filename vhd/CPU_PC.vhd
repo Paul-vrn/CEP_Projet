@@ -138,7 +138,10 @@ begin
                         case status.IR(14 downto 12) is
                             when "000" =>
                                 state_d <= S_ADDI;
-                            when "010" | "011" => -- slti | sltiu
+                            when "010" => -- slti | sltiu
+                                state_d <= S_SETS;
+                            when "011" => -- sltiu
+                                cmd.RF_SIGN_enable <= '0';
                                 state_d <= S_SETS;
                             when "100" | "110" | "111" => -- xori | ori | andi
                                 state_d <= S_LOGIC;
@@ -156,7 +159,10 @@ begin
                                 state_d <= S_ARITHMETIQUE;
                             when "001" | "101" => -- sll | (sra | srl)
                                 state_d <= S_DECALAGE;
-                            when "010" | "011" => -- slt | sltu
+                            when "010" => -- slt 
+                                state_d <= S_SETS;
+                            when "011" => -- sltu
+                                cmd.RF_SIGN_enable <= '0';
                                 state_d <= S_SETS;
                             when "100" | "110" | "111" => -- xor | or | and
                                 state_d <= S_LOGIC;
@@ -291,9 +297,9 @@ begin
                 else
                     cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
                 end if;
-                if status.IR(14 downto 12) = "011" or status.IR(14 downto 12) = "111" then
-                    cmd.RF_SIGN_enable <= '1';
-                end if;
+--                if status.IR(14 downto 12) = "011" or status.IR(14 downto 12) = "111" then
+--                    cmd.RF_SIGN_enable <= '1';
+--                end if;
                 cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
                 cmd.DATA_sel <= DATA_from_slt;
                 cmd.PC_we <= '1';
@@ -310,10 +316,9 @@ begin
             else 
                 state_d <= S_Error;
             end if;
-            if status.IR(14 downto 12) = "011" then
-                cmd.RF_SIGN_enable <= '1';
-            end if;
-
+--            if status.IR(14 downto 12) = "011" then
+--                cmd.RF_SIGN_enable <= '1';
+--            end if;
             cmd.DATA_sel <= DATA_from_slt;
             cmd.RF_we <= '1';
             cmd.ADDR_sel <= ADDR_from_pc;
