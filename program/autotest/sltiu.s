@@ -2,9 +2,9 @@
 	.text
 	addi x28, x0, 5
 	addi x29, x0, 6
-	slt x31, x28, 6
-	slt x31, x29, 5
-	slt x31, x29, 6
+	sltiu x31, x28, 6
+	sltiu x31, x29, 5
+	sltiu x31, x29, 6
 	# max_cycle 50
 	# pout_start
 	# 00000001
