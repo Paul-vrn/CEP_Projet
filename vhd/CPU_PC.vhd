@@ -180,8 +180,10 @@ begin
             when S_LOGIC =>
                 if status.IR(6 downto 0)= "0010011" then
                     cmd.ALU_Y_sel <= ALU_Y_immI;
-                else
+                elsif status.IR(6 downto 0) = "0110011" then
                     cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
+                else 
+                    state_d <= S_Error;
                 end if;
                 -- "100" | "110" | "111" => -- xor | or | and     
                 if (status.IR(14 downto 12) = "100") then
@@ -230,6 +232,8 @@ begin
                     cmd.ALU_op <= ALU_plus;
                 elsif status.IR(31 downto 25) = "0100000" then
                     cmd.ALU_op <= ALU_minus;
+                else 
+                    state_d <= S_Error;
                 end if;
                 cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
                 cmd.RF_we <= '1';
@@ -283,23 +287,26 @@ begin
                 cmd.mem_we <= '0';
                 state_d <= S_Pre_Fetch;
             when S_BRANCH => 
-                if  ((status.IR(14 downto 12) = "000" -- beq
-                    or status.IR(14 downto 12) = "100" -- blt
-                    or status.IR(14 downto 12) = "110") -- bltu
-                    and status.jcond)
-                    or
-                    ((status.IR(14 downto 12) = "001" -- bne
-                    or status.IR(14 downto 12) = "101" -- bge
-                    or status.IR(14 downto 12) = "111") -- bgeu
-                    and status.jcond)
-                    then
+
+--                if  ((status.IR(14 downto 12) = "000" -- beq
+--                    or status.IR(14 downto 12) = "100" -- blt
+--                    or status.IR(14 downto 12) = "110") -- bltu
+--                    and status.jcond)
+--                    or
+--                    ((status.IR(14 downto 12) = "001" -- bne
+--                    or status.IR(14 downto 12) = "101" -- bge
+--                    or status.IR(14 downto 12) = "111") -- bgeu
+--                    and status.jcond)
+--                    then
+--                    cmd.TO_PC_Y_sel <= TO_PC_Y_immB;
+--                else
+--                    cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+--                end if;
+                if (status.jcond) then
                     cmd.TO_PC_Y_sel <= TO_PC_Y_immB;
                 else
                     cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
                 end if;
---                if status.IR(14 downto 12) = "011" or status.IR(14 downto 12) = "111" then
---                    cmd.RF_SIGN_enable <= '1';
---                end if;
                 cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
                 cmd.DATA_sel <= DATA_from_slt;
                 cmd.PC_we <= '1';
