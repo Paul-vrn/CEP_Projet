@@ -289,34 +289,33 @@ begin
             when S_BRANCH => 
                 if (status.jcond) then
                     cmd.TO_PC_Y_sel <= TO_PC_Y_immB;
-                    cmd.DATA_sel <= DATA_from_slt;
                 else
                     cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
-                    cmd.DATA_sel <= DATA_from_pc;
                 end if;
+                cmd.DATA_sel <= DATA_from_slt;
                 cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
                 cmd.PC_we <= '1';
+                cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.PC_sel <= PC_from_pc;
                 state_d <= S_Pre_Fetch;
             when S_SETS => 
-            if status.IR(6 downto 0)= "0010011" then
-                cmd.ALU_Y_sel <= ALU_Y_immI;
-            elsif status.IR(6 downto 0)= "0110011" then
-                cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
-            else 
-                state_d <= S_Error;
-            end if;
---            if status.IR(14 downto 12) = "011" then
---                cmd.RF_SIGN_enable <= '1';
---            end if;
-            cmd.DATA_sel <= DATA_from_slt;
-            cmd.RF_we <= '1';
-            cmd.ADDR_sel <= ADDR_from_pc;
-            cmd.mem_ce <= '1';
-            cmd.mem_we <= '0';
-            state_d <= S_Fetch;
+                if status.IR(6 downto 0)= "0010011" then
+                    cmd.ALU_Y_sel <= ALU_Y_immI;
+                elsif status.IR(6 downto 0)= "0110011" then
+                    cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
+                else
+                    state_d <= S_Error;
+                end if;
+                cmd.DATA_sel <= DATA_from_slt;
+                cmd.RF_we <= '1';
+                cmd.ADDR_sel <= ADDR_from_pc;
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+                state_d <= S_Fetch;
+
+
 
 
 

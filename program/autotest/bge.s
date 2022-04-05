@@ -11,12 +11,12 @@ test2:
 	bge x31, x31, end 
 test3:
 	bge x29, x0, test2
-	addi x31, x31, 1
-	end:
-	addi x31, x31, 1
+	addi x31, x31, 3
+end:
+	addi x31, x31, 4
 	# max_cycle 50
 	# pout_start
 	# 00000000
 	# 00000002
-	# 00000003
+	# 00000006
 	# pout_end
