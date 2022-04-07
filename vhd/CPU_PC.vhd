@@ -37,9 +37,10 @@ architecture RTL of CPU_PC is
         S_SETS,
         S_LOGIC,
         S_JAL,
-        S_LW,
-        S_LW2,
-        S_LW3
+        S_LOAD,
+        S_LOAD_2,
+        S_LOAD_3,
+        S_SW
     );
 
     signal state_d, state_q : State_type;
@@ -178,7 +179,7 @@ begin
                     when "1100011" => 
                         state_d <= S_BRANCH;
                     when "0000011" =>
-                        state_d <= S_LW;
+                        state_d <= S_LOAD;
                     when others => 
                         state_d <= S_Error;
                 end case;
@@ -292,8 +293,8 @@ begin
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.mem_we <= '0';
                 state_d <= S_Pre_Fetch;
-            when S_BRANCH =>                 cmd.ADDR_sel <= ADDR_from_pc;
-
+            when S_BRANCH =>                 
+                cmd.ADDR_sel <= ADDR_from_pc;
                 if (status.jcond) then
                     cmd.TO_PC_Y_sel <= TO_PC_Y_immB;
                 else
@@ -326,27 +327,46 @@ begin
 
 
 
-            when S_LW => -- calcule AD
+            when S_LOAD => -- calcule AD
                 cmd.AD_Y_sel <= AD_Y_immI;
                 cmd.AD_we <= '1';
-                state_d <= S_LW2;
-            when S_LW2 => -- met AD dans la mem
+                state_d <= S_LOAD_2;
+            when S_LOAD_2 => -- met AD dans la mem
                 cmd.ADDR_sel <= ADDR_from_ad;
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
                 cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
                 cmd.PC_sel <= PC_from_pc;
                 cmd.PC_we <= '1';
-                state_d <= S_LW3;
-            when S_LW3 => -- récup AD et le met dans rd
+                state_d <= S_LOAD_3;
+            when S_LOAD_3 => -- récup AD et le met dans rd
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.RF_we <= '1';
-                cmd.RF_SIZE_sel <= RF_SIZE_word;
+                if (status.IR(14 downto 12)= "010") then -- lw
+                    cmd.RF_SIZE_sel <= RF_SIZE_word;
+                elsif (status.IR(14 downto 12)= "000") then -- lb
+                    cmd.RF_SIZE_sel <= RF_SIZE_byte;
+                    cmd.RF_SIGN_enable <= '0';
+                elsif (status.IR(14 downto 12)= "100") then -- lbu
+                    cmd.RF_SIZE_sel <= RF_SIZE_byte;
+                    cmd.RF_SIGN_enable <= '1';
+                elsif (status.IR(14 downto 12)= "001") then -- lh
+                    cmd.RF_SIZE_sel <= RF_SIZE_half;
+                    cmd.RF_SIGN_enable <= '0';
+                elsif (status.IR(14 downto 12)= "101") then -- lhu
+                    cmd.RF_SIZE_sel <= RF_SIZE_half;
+                    cmd.RF_SIGN_enable <= '1';
+                else
+                    state_d <= S_Error;
+                end if;
                 cmd.DATA_sel <= DATA_from_mem;
 
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
                 state_d <= S_Fetch;
+            
+            when S_SW => 
+                
             when S_JAL => 
                 -- TODO 
                 state_d <= S_Error;

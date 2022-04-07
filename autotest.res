@@ -9,6 +9,10 @@ bgeu        PASSED
 blt         PASSED
 bltu        PASSED
 bne         PASSED
+lb          PASSED
+lbu         PASSED
+lh          PASSED
+lhu         PASSED
 lui         PASSED
 lw          PASSED
 ori         PASSED
