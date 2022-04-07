@@ -10,6 +10,7 @@ blt         PASSED
 bltu        PASSED
 bne         PASSED
 lui         PASSED
+lw          PASSED
 ori         PASSED
 or          PASSED
 rebouclage  PASSED

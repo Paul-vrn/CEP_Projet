@@ -35,7 +35,11 @@ architecture RTL of CPU_PC is
         S_AUIPC,
         S_BRANCH,
         S_SETS,
-        S_LOGIC
+        S_LOGIC,
+        S_JAL,
+        S_LW,
+        S_LW2,
+        S_LW3
     );
 
     signal state_d, state_q : State_type;
@@ -173,6 +177,8 @@ begin
                         state_d <= S_AUIPC;
                     when "1100011" => 
                         state_d <= S_BRANCH;
+                    when "0000011" =>
+                        state_d <= S_LW;
                     when others => 
                         state_d <= S_Error;
                 end case;
@@ -286,7 +292,8 @@ begin
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.mem_we <= '0';
                 state_d <= S_Pre_Fetch;
-            when S_BRANCH => 
+            when S_BRANCH =>                 cmd.ADDR_sel <= ADDR_from_pc;
+
                 if (status.jcond) then
                     cmd.TO_PC_Y_sel <= TO_PC_Y_immB;
                 else
@@ -319,17 +326,30 @@ begin
 
 
 
----------- Instructions avec immediat de type U ----------
+            when S_LW => -- calcule AD
+                cmd.AD_Y_sel <= AD_Y_immI;
+                cmd.AD_we <= '1';
+                state_d <= S_LW2;
+            when S_LW2 => -- met AD dans la mem
+                cmd.ADDR_sel <= ADDR_from_ad;
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+                cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                cmd.PC_sel <= PC_from_pc;
+                cmd.PC_we <= '1';
+                state_d <= S_LW3;
+            when S_LW3 => -- récup AD et le met dans rd
+                cmd.ADDR_sel <= ADDR_from_pc;
+                cmd.RF_we <= '1';
+                cmd.RF_SIZE_sel <= RF_SIZE_word;
+                cmd.DATA_sel <= DATA_from_mem;
 
----------- Instructions arithmétiques et logiques ----------
-
----------- Instructions de saut ----------
-
----------- Instructions de chargement à partir de la mémoire ----------
-
----------- Instructions de sauvegarde en mémoire ----------
-
----------- Instructions d'accès aux CSR ----------
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+                state_d <= S_Fetch;
+            when S_JAL => 
+                -- TODO 
+                state_d <= S_Error;
 
             when others => null;
             end case;
