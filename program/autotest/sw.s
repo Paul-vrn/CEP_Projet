@@ -1,14 +1,14 @@
 # TAG = sw
 	.text
 	la x1, test
-	addi x31, x0, 0xcafe
+	addi x31, x0, 12
 	sw x31, 0(x1)
 	addi x31, x31, 1
 	lw x31, 0(x1)
 	# max_cycle 50
-	# 0000cafe
-	# 0000caff
-	# 0000cafe
+	# 0000000c
+	# 0000000d
+	# 0000000c
 	# pout_end
 
 	.data
