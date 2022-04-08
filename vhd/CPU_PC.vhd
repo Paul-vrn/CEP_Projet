@@ -336,6 +336,24 @@ begin
                 cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
                 cmd.PC_sel <= PC_from_pc;
                 cmd.PC_we <= '1';
+              if (status.IR(14 downto 12)= "010") then -- lw
+                cmd.RF_SIZE_sel <= RF_SIZE_word;
+              elsif (status.IR(14 downto 12)= "000") then -- lb
+                cmd.RF_SIZE_sel <= RF_SIZE_byte;
+                cmd.RF_SIGN_enable <= '0';
+              elsif (status.IR(14 downto 12)= "100") then -- lbu
+                cmd.RF_SIZE_sel <= RF_SIZE_byte;
+                cmd.RF_SIGN_enable <= '1';
+              elsif (status.IR(14 downto 12)= "001") then -- lh
+                cmd.RF_SIZE_sel <= RF_SIZE_half;
+                cmd.RF_SIGN_enable <= '0';
+              elsif (status.IR(14 downto 12)= "101") then -- lhu
+                cmd.RF_SIZE_sel <= RF_SIZE_half;
+                cmd.RF_SIGN_enable <= '1';
+              else
+                state_d <= S_Error;
+              end if;
+                
                 state_d <= S_LOAD;
             when S_LOAD => -- récup AD et le met dans rd
                 cmd.ADDR_sel <= ADDR_from_pc;
