@@ -372,6 +372,7 @@ begin
                 cmd.ADDR_sel <= ADDR_from_ad;
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '1';
+                cmd.RF_SIGN_enable <= '1';
 
                 state_d <= S_Fetch;
                 if (status.IR(14 downto 12)= "010") then -- sw
