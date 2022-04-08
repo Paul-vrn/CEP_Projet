@@ -32,3 +32,5 @@ LB
 LBU
 LH
 LHU
+JAL
+JALR

@@ -9,6 +9,8 @@ bgeu        PASSED
 blt         PASSED
 bltu        PASSED
 bne         PASSED
+jalr        FAILED
+jal         PASSED
 lb          PASSED
 lbu         PASSED
 lh          PASSED

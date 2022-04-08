@@ -36,7 +36,7 @@ architecture RTL of CPU_PC is
         S_BRANCH,
         S_SETS,
         S_LOGIC,
-        S_JAL,
+        S_JAL_JALR,
         S_PRE_LOAD,
         S_LOAD,
         S_SW
@@ -178,12 +178,11 @@ begin
                     when "1100011" => 
                         state_d <= S_BRANCH;
                     when "0000011" =>
-                        cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
-                        cmd.PC_sel <= PC_from_pc;
-                        cmd.PC_we <= '1';
                         cmd.AD_we <= '1';
                         cmd.AD_Y_sel <= AD_Y_immI;
                         state_d <= S_PRE_LOAD;
+                    when "1101111" | "1100111" => -- jal | jalr
+                        state_d <= S_JAL_JALR;
                     when others => 
                         state_d <= S_Error;
                 end case;
@@ -336,41 +335,60 @@ begin
                 cmd.ADDR_sel <= ADDR_from_ad;
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
+
+                cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                cmd.PC_sel <= PC_from_pc;
+                cmd.PC_we <= '1';
+
+
                 state_d <= S_LOAD;
             when S_LOAD => -- récup AD et le met dans rd
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.RF_we <= '1';
                 cmd.RF_SIZE_sel <= RF_SIZE_word;
                 cmd.RF_SIGN_enable <= '0';
---                if (status.IR(14 downto 12)= "010") then -- lw
---                    cmd.RF_SIZE_sel <= RF_SIZE_word;
---               elsif (status.IR(14 downto 12)= "000") then -- lb
---                    cmd.RF_SIZE_sel <= RF_SIZE_byte;
---                    cmd.RF_SIGN_enable <= '0';
---                elsif (status.IR(14 downto 12)= "100") then -- lbu
---                    cmd.RF_SIZE_sel <= RF_SIZE_byte;
---                    cmd.RF_SIGN_enable <= '1';
---                elsif (status.IR(14 downto 12)= "001") then -- lh
---                    cmd.RF_SIZE_sel <= RF_SIZE_half;
---                    cmd.RF_SIGN_enable <= '0';
- --               elsif (status.IR(14 downto 12)= "101") then -- lhu
-  --                  cmd.RF_SIZE_sel <= RF_SIZE_half;
-   --                 cmd.RF_SIGN_enable <= '1';
-    --            else
-     --               state_d <= S_Error;
-      --          end if;
+                --if (status.IR(14 downto 12)= "010") then -- lw
+                --  cmd.RF_SIZE_sel <= RF_SIZE_word;
+                --elsif (status.IR(14 downto 12)= "000") then -- lb
+                --  cmd.RF_SIZE_sel <= RF_SIZE_byte;
+                --  cmd.RF_SIGN_enable <= '0';
+                --elsif (status.IR(14 downto 12)= "100") then -- lbu
+                --  cmd.RF_SIZE_sel <= RF_SIZE_byte;
+                --  cmd.RF_SIGN_enable <= '1';
+                --elsif (status.IR(14 downto 12)= "001") then -- lh
+                --  cmd.RF_SIZE_sel <= RF_SIZE_half;
+                --  cmd.RF_SIGN_enable <= '0';
+                --elsif (status.IR(14 downto 12)= "101") then -- lhu
+                --  cmd.RF_SIZE_sel <= RF_SIZE_half;
+                --  cmd.RF_SIGN_enable <= '1';
+                --else
+                --  state_d <= S_Error;
+                --end if;
                 cmd.DATA_sel <= DATA_from_mem;
 
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
-                state_d <= S_Pre_Fetch;
+                state_d <= S_Fetch;
             
             when S_SW => 
                 
-            when S_JAL => 
-                -- TODO 
-                state_d <= S_Error;
-
+            when S_JAL_JALR => 
+                cmd.PC_X_sel <= PC_X_pc;
+                cmd.PC_Y_sel <= PC_Y_cst_x04;
+                cmd.DATA_sel <= DATA_from_pc;
+                cmd.RF_we <= '1';
+                cmd.PC_we <= '1';
+                state_d <= S_Pre_Fetch;
+                if (status.IR(6 downto 0) = "1101111") then -- jal
+                    cmd.TO_PC_Y_sel <= TO_PC_Y_immJ;
+                    cmd.PC_sel <= PC_from_pc;
+                elsif (status.IR(6 downto 0) = "1100111") then -- jalr
+                    cmd.ALU_Y_sel <= ALU_Y_immI;
+                    cmd.ALU_op <= ALU_plus;
+                    cmd.PC_sel <= PC_from_alu;
+                else
+                    state_d <= S_Error;
+                end if;
             when others => null;
             end case;
 
