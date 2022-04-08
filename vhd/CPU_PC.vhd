@@ -326,7 +326,7 @@ begin
             when S_CALC_AD => 
                 cmd.AD_we <= '1';
                 cmd.AD_Y_sel <= AD_Y_immI;
-                if (status.IR(6 downto 0) = "0010011") then
+                if (status.IR(6 downto 0) = "0000011") then
                     state_d <= S_PRE_LOAD;
                     cmd.AD_Y_sel <= AD_Y_immI;
                 elsif (status.IR(6 downto 0) = "0100011") then
