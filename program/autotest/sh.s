@@ -1,14 +1,15 @@
 # TAG = sh
 	.text
-	la x31, test
+	la x1, test
+	addi x31, x0, 0xcafe
+	sw x31, 0(x1)
 	addi x31, x31, 1
-	sh x31, test
-	la x31, test
+	lw x31, 0(x1)
 	# max_cycle 50
 	# pout_start
-	# 0000CAFE
-	# 0000CAFF
-	# 0000CAFF
+	# 0000cafe
+	# 0000caff
+	# 0000cafe
 	# pout_end
 
 	.data
