@@ -37,6 +37,7 @@ architecture RTL of CPU_PC is
         S_SETS,
         S_LOGIC,
         S_JAL_JALR,
+        S_CALC_AD,
         S_PRE_LOAD,
         S_LOAD,
         S_SW
@@ -327,17 +328,14 @@ begin
             when S_CALC_AD => 
                 cmd.AD_we <= '1';
                 cmd.AD_Y_sel <= AD_Y_immI;
-                state_d <= S_PRE_FETCH;
+                state_d <= S_PRE_LOAD;
             when S_PRE_LOAD => -- met AD dans la mem
                 cmd.ADDR_sel <= ADDR_from_ad;
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
-
                 cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
                 cmd.PC_sel <= PC_from_pc;
                 cmd.PC_we <= '1';
-
-
                 state_d <= S_LOAD;
             when S_LOAD => -- récup AD et le met dans rd
                 cmd.ADDR_sel <= ADDR_from_pc;
