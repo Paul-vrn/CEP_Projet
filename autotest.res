@@ -33,3 +33,6 @@ srl         PASSED
 sub         PASSED
 xori        PASSED
 xor         PASSED
+sw          PASSED
+sh          PASSED
+sb          PASSED
