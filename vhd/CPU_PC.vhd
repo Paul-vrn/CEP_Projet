@@ -37,9 +37,8 @@ architecture RTL of CPU_PC is
         S_SETS,
         S_LOGIC,
         S_JAL,
+        S_PRE_LOAD,
         S_LOAD,
-        S_LOAD_2,
-        S_LOAD_3,
         S_SW
     );
 
@@ -179,7 +178,12 @@ begin
                     when "1100011" => 
                         state_d <= S_BRANCH;
                     when "0000011" =>
-                        state_d <= S_LOAD;
+                        cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                        cmd.PC_sel <= PC_from_pc;
+                        cmd.PC_we <= '1';
+                        cmd.AD_we <= '1';
+                        cmd.AD_Y_sel <= AD_Y_immI;
+                        state_d <= S_PRE_LOAD;
                     when others => 
                         state_d <= S_Error;
                 end case;
@@ -260,7 +264,7 @@ begin
                 else 
                     state_d <= S_Error;
                 end if;
---                when "001" | "101" | => -- sll | (sra | srl)
+                -- when "001" | "101" | => -- sll | (sra | srl)
                 if (status.IR(14 downto 12) = "001") then
                     cmd.SHIFTER_op <= SHIFT_ll;
                 elsif (status.IR(14 downto 12) = "101") then
@@ -327,43 +331,39 @@ begin
 
 
 
-            when S_LOAD => -- calcule AD
-                cmd.AD_Y_sel <= AD_Y_immI;
-                cmd.AD_we <= '1';
-                state_d <= S_LOAD_2;
-            when S_LOAD_2 => -- met AD dans la mem
+
+            when S_PRE_LOAD => -- met AD dans la mem
                 cmd.ADDR_sel <= ADDR_from_ad;
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
-                cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
-                cmd.PC_sel <= PC_from_pc;
-                cmd.PC_we <= '1';
-                state_d <= S_LOAD_3;
-            when S_LOAD_3 => -- récup AD et le met dans rd
+                state_d <= S_LOAD;
+            when S_LOAD => -- récup AD et le met dans rd
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.RF_we <= '1';
-                if (status.IR(14 downto 12)= "010") then -- lw
-                    cmd.RF_SIZE_sel <= RF_SIZE_word;
-                elsif (status.IR(14 downto 12)= "000") then -- lb
-                    cmd.RF_SIZE_sel <= RF_SIZE_byte;
-                    cmd.RF_SIGN_enable <= '0';
-                elsif (status.IR(14 downto 12)= "100") then -- lbu
-                    cmd.RF_SIZE_sel <= RF_SIZE_byte;
-                    cmd.RF_SIGN_enable <= '1';
-                elsif (status.IR(14 downto 12)= "001") then -- lh
-                    cmd.RF_SIZE_sel <= RF_SIZE_half;
-                    cmd.RF_SIGN_enable <= '0';
-                elsif (status.IR(14 downto 12)= "101") then -- lhu
-                    cmd.RF_SIZE_sel <= RF_SIZE_half;
-                    cmd.RF_SIGN_enable <= '1';
-                else
-                    state_d <= S_Error;
-                end if;
+                cmd.RF_SIZE_sel <= RF_SIZE_word;
+                cmd.RF_SIGN_enable <= '0';
+--                if (status.IR(14 downto 12)= "010") then -- lw
+--                    cmd.RF_SIZE_sel <= RF_SIZE_word;
+--               elsif (status.IR(14 downto 12)= "000") then -- lb
+--                    cmd.RF_SIZE_sel <= RF_SIZE_byte;
+--                    cmd.RF_SIGN_enable <= '0';
+--                elsif (status.IR(14 downto 12)= "100") then -- lbu
+--                    cmd.RF_SIZE_sel <= RF_SIZE_byte;
+--                    cmd.RF_SIGN_enable <= '1';
+--                elsif (status.IR(14 downto 12)= "001") then -- lh
+--                    cmd.RF_SIZE_sel <= RF_SIZE_half;
+--                    cmd.RF_SIGN_enable <= '0';
+ --               elsif (status.IR(14 downto 12)= "101") then -- lhu
+  --                  cmd.RF_SIZE_sel <= RF_SIZE_half;
+   --                 cmd.RF_SIGN_enable <= '1';
+    --            else
+     --               state_d <= S_Error;
+      --          end if;
                 cmd.DATA_sel <= DATA_from_mem;
 
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
-                state_d <= S_Fetch;
+                state_d <= S_Pre_Fetch;
             
             when S_SW => 
                 
