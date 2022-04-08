@@ -10,7 +10,5 @@
 	# 0000000d
 	# 0000000c
 	# pout_end
-
-
 	.data
 test: .byte 0xfe

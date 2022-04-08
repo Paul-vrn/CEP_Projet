@@ -10,7 +10,6 @@
 	# 0000000d
 	# 0000000c
 	# pout_end
-
-
 	.data
 test: .half 0xcafe
+
