@@ -329,7 +329,7 @@ begin
                 if (status.IR(6 downto 0) = "0010011") then
                     state_d <= S_PRE_LOAD;
                     cmd.AD_Y_sel <= AD_Y_immI;
-                elsif (status.IR(6 donwto 0) = "0100011") then
+                elsif (status.IR(6 downto 0) = "0100011") then
                     state_d <= S_STORE;
                     cmd.AD_Y_sel <= AD_Y_immS;
                 else
