@@ -178,9 +178,7 @@ begin
                     when "1100011" => 
                         state_d <= S_BRANCH;
                     when "0000011" =>
-                        cmd.AD_we <= '1';
-                        cmd.AD_Y_sel <= AD_Y_immI;
-                        state_d <= S_PRE_LOAD;
+                        state_d <= S_CALC_AD;
                     when "1101111" | "1100111" => -- jal | jalr
                         state_d <= S_JAL_JALR;
                     when others => 
@@ -325,12 +323,11 @@ begin
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
                 state_d <= S_Fetch;
-
-
-
-
-
-
+            
+            when S_CALC_AD => 
+                cmd.AD_we <= '1';
+                cmd.AD_Y_sel <= AD_Y_immI;
+                state_d <= S_PRE_FETCH;
             when S_PRE_LOAD => -- met AD dans la mem
                 cmd.ADDR_sel <= ADDR_from_ad;
                 cmd.mem_ce <= '1';
