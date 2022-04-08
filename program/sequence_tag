@@ -34,3 +34,6 @@ LH
 LHU
 JAL
 JALR
+SW
+SB
+SH

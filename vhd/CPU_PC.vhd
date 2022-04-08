@@ -40,7 +40,7 @@ architecture RTL of CPU_PC is
         S_CALC_AD,
         S_PRE_LOAD,
         S_LOAD,
-        S_SW
+        S_STORE
     );
 
     signal state_d, state_q : State_type;
@@ -178,7 +178,7 @@ begin
                         state_d <= S_AUIPC;
                     when "1100011" => 
                         state_d <= S_BRANCH;
-                    when "0000011" =>
+                    when "0000011" | "0100011" => -- LOAD | STORE
                         state_d <= S_CALC_AD;
                     when "1101111" | "1100111" => -- jal | jalr
                         state_d <= S_JAL_JALR;
@@ -187,6 +187,14 @@ begin
                 end case;
 
             when S_LOGIC =>
+                cmd.RF_we <= '1';
+                cmd.DATA_sel <= DATA_from_logical;
+                -- lecture mém
+                cmd.ADDR_sel <= ADDR_from_pc;
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+                -- next state
+                state_d <= S_Fetch;    
                 if status.IR(6 downto 0)= "0010011" then
                     cmd.ALU_Y_sel <= ALU_Y_immI;
                 elsif status.IR(6 downto 0) = "0110011" then
@@ -204,15 +212,7 @@ begin
                 else
                     state_d <= S_Error;
                 end if; 
-                cmd.RF_we <= '1';
-                cmd.DATA_sel <= DATA_from_logical;
-                -- lecture mém
-                cmd.ADDR_sel <= ADDR_from_pc;
-                cmd.mem_ce <= '1';
-                cmd.mem_we <= '0';
-                -- next state
-                state_d <= S_Fetch;    
-            when S_LUI =>
+                when S_LUI =>
                 -- rd <- ImmU + 0
                 cmd.PC_X_sel <= PC_X_cst_x00;
                 cmd.PC_Y_sel <= PC_Y_immU;
@@ -237,13 +237,6 @@ begin
                 -- next state
                 state_d <= S_Fetch;
             when S_ARITHMETIQUE =>
-                if status.IR(31 downto 25) = "0000000" then
-                    cmd.ALU_op <= ALU_plus;
-                elsif status.IR(31 downto 25) = "0100000" then
-                    cmd.ALU_op <= ALU_minus;
-                else 
-                    state_d <= S_Error;
-                end if;
                 cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
                 cmd.RF_we <= '1';
                 cmd.DATA_sel <= DATA_from_alu;
@@ -253,8 +246,22 @@ begin
                 cmd.mem_we <= '0';
                 -- next state
                 state_d <= S_Fetch;
-                
+                if status.IR(31 downto 25) = "0000000" then
+                    cmd.ALU_op <= ALU_plus;
+                elsif status.IR(31 downto 25) = "0100000" then
+                    cmd.ALU_op <= ALU_minus;
+                else 
+                    state_d <= S_Error;
+                end if;                
             when S_DECALAGE =>
+                cmd.RF_we <= '1';
+                cmd.DATA_sel <= DATA_from_shifter;
+
+                cmd.ADDR_sel <= ADDR_from_pc;
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+                -- next state
+                state_d <= S_Fetch;
                 if (status.IR(6 downto 0) = "0010011") then
                     cmd.SHIFTER_Y_sel <= SHIFTER_Y_ir_sh;
                 elsif (status.IR(6 downto 0) = "0110011") then
@@ -274,15 +281,6 @@ begin
                         state_d <= S_Error;
                     end if;
                 end if;
-                cmd.RF_we <= '1';
-                cmd.DATA_sel <= DATA_from_shifter;
-
-                cmd.ADDR_sel <= ADDR_from_pc;
-                cmd.mem_ce <= '1';
-                cmd.mem_we <= '0';
-                -- next state
-                state_d <= S_Fetch;
-
             when S_AUIPC => 
                 cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
                 cmd.PC_sel <= PC_from_pc;
@@ -311,24 +309,32 @@ begin
                 cmd.PC_sel <= PC_from_pc;
                 state_d <= S_Pre_Fetch;
             when S_SETS => 
-                if status.IR(6 downto 0)= "0010011" then
-                    cmd.ALU_Y_sel <= ALU_Y_immI;
-                elsif status.IR(6 downto 0)= "0110011" then
-                    cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
-                else
-                    state_d <= S_Error;
-                end if;
+
                 cmd.DATA_sel <= DATA_from_slt;
                 cmd.RF_we <= '1';
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
                 state_d <= S_Fetch;
-            
+                if status.IR(6 downto 0)= "0010011" then
+                    cmd.ALU_Y_sel <= ALU_Y_immI;
+                elsif status.IR(6 downto 0)= "0110011" then
+                    cmd.ALU_Y_sel <= ALU_Y_rf_rs2;
+                else
+                    state_d <= S_Error;
+                end if;            
             when S_CALC_AD => 
                 cmd.AD_we <= '1';
                 cmd.AD_Y_sel <= AD_Y_immI;
-                state_d <= S_PRE_LOAD;
+                if (status.IR(6 downto 0) = "0010011") then
+                    state_d <= S_PRE_LOAD;
+                    cmd.AD_Y_sel <= AD_Y_immI;
+                elsif (status.IR(6 donwto 0) = "0100011") then
+                    state_d <= S_STORE;
+                    cmd.AD_Y_sel <= AD_Y_immS;
+                else
+                    state_d <= S_Error;
+                end if;
             when S_PRE_LOAD => -- met AD dans la mem
                 cmd.ADDR_sel <= ADDR_from_ad;
                 cmd.mem_ce <= '1';
@@ -362,9 +368,26 @@ begin
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
                 state_d <= S_Fetch;
-            
-            when S_SW => 
-                
+                        
+            when S_STORE =>
+                cmd.ADDR_sel <= ADDR_from_ad;
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+
+                state_d <= S_Fetch;
+                if (status.IR(14 downto 12)= "010") then -- sw
+                    cmd.RF_SIZE_sel <= RF_SIZE_word;
+                elsif (status.IR(14 downto 12)= "000") then -- sb
+                    cmd.RF_SIZE_sel <= RF_SIZE_byte;
+                elsif (status.IR(14 downto 12)= "001") then -- sh
+                    cmd.RF_SIZE_sel <= RF_SIZE_half;
+                else
+                    state_d <= S_Error;
+                end if;
+
+                cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                cmd.PC_sel <= PC_from_pc;
+                cmd.PC_we <= '1';
             when S_JAL_JALR => 
                 cmd.PC_X_sel <= PC_X_pc;
                 cmd.PC_Y_sel <= PC_Y_cst_x04;
