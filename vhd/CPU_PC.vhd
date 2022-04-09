@@ -325,15 +325,8 @@ begin
                 end if;            
             when S_CALC_AD => 
                 cmd.AD_we <= '1';
-                if (status.IR(6 downto 0) = "0000011") then
-                    state_d <= S_PRE_LOAD;
-                    cmd.AD_Y_sel <= AD_Y_immI;
-                elsif (status.IR(6 downto 0) = "0100011") then
-                    state_d <= S_STORE;
-                    cmd.AD_Y_sel <= AD_Y_immS;
-                else
-                    state_d <= S_Error;
-                end if;
+                cmd.AD_Y_sel <= AD_Y_immI;
+                state_d <= S_PRE_LOAD;
             when S_PRE_LOAD => -- met AD dans la mem
                 cmd.ADDR_sel <= ADDR_from_ad;
                 cmd.mem_ce <= '1';
@@ -367,10 +360,13 @@ begin
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
                 state_d <= S_Fetch;
-                        
+            when S_PRE_LOAD => 
+                state_d <= S_STORE;
+                cmd.AD_Y_sel <= AD_Y_immS;
+    
             when S_STORE =>
                 cmd.ADDR_sel <= ADDR_from_ad;
-                cmd.mem_ce <= '1';
+                cmd.mem_ce <= '0';
                 cmd.mem_we <= '1';
                 cmd.RF_SIGN_enable <= '1';
 
