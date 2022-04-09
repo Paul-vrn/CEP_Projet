@@ -40,6 +40,7 @@ architecture RTL of CPU_PC is
         S_CALC_AD,
         S_PRE_LOAD,
         S_LOAD,
+        S_PRE_STORE,
         S_STORE
     );
 
@@ -360,7 +361,7 @@ begin
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
                 state_d <= S_Fetch;
-            when S_PRE_LOAD => 
+            when S_PRE_STORE => 
                 state_d <= S_STORE;
                 cmd.AD_Y_sel <= AD_Y_immS;
     
