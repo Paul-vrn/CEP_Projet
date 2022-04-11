@@ -182,7 +182,7 @@ begin
                     when "0000011" => -- LOAD
                         state_d <= S_CALC_AD;
                     when "0100011" =>
-                        state_d <- S_PRE_STORE; -- STORE
+                        state_d <= S_PRE_STORE; -- STORE
                     when "1101111" | "1100111" => -- jal | jalr
                         state_d <= S_JAL_JALR;
                     when others => 
