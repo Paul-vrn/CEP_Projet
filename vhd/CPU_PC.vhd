@@ -363,15 +363,14 @@ begin
                 cmd.mem_we <= '0';
             when S_PRE_STORE => 
                 state_d <= S_STORE;
+                cmd.AD_we <= '1';
                 cmd.AD_Y_sel <= AD_Y_immS;
     
             when S_STORE =>
                 cmd.ADDR_sel <= ADDR_from_ad;
-                cmd.mem_ce <= '0';
+                cmd.mem_ce <= '1';
                 cmd.mem_we <= '1';
-                cmd.RF_SIGN_enable <= '1';
-
-                state_d <= S_Fetch;
+                state_d <= S_Pre_Fetch;
                 if (status.IR(14 downto 12)= "010") then -- sw
                     cmd.RF_SIZE_sel <= RF_SIZE_word;
                 elsif (status.IR(14 downto 12)= "000") then -- sb
@@ -382,9 +381,6 @@ begin
                     state_d <= S_Error;
                 end if;
 
-                cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
-                cmd.PC_sel <= PC_from_pc;
-                cmd.PC_we <= '1';
             when S_JAL_JALR => 
                 cmd.PC_X_sel <= PC_X_pc;
                 cmd.PC_Y_sel <= PC_Y_cst_x04;
