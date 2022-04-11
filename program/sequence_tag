@@ -33,7 +33,7 @@ LBU
 LH
 LHU
 JAL
-JALR
-SW
-SB
-SH
+#JALR
+#SW
+#SB
+#SH

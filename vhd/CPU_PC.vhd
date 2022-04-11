@@ -337,22 +337,23 @@ begin
                 cmd.PC_we <= '1';
                 state_d <= S_LOAD;
             when S_LOAD => -- récup AD et le met dans rd
+                state_d <= S_Fetch;
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.RF_we <= '1';
                 if (status.IR(14 downto 12)= "010") then -- lw
                     cmd.RF_SIZE_sel <= RF_SIZE_word;
                 elsif (status.IR(14 downto 12)= "000") then -- lb
                     cmd.RF_SIZE_sel <= RF_SIZE_byte;
-                    cmd.RF_SIGN_enable <= '1';
+                    cmd.RF_SIGN_enable <= '0';
                 elsif (status.IR(14 downto 12)= "100") then -- lbu
                     cmd.RF_SIZE_sel <= RF_SIZE_byte;
-                    cmd.RF_SIGN_enable <= '0';
+                    cmd.RF_SIGN_enable <= '1';
                 elsif (status.IR(14 downto 12)= "001") then -- lh
                     cmd.RF_SIZE_sel <= RF_SIZE_half;
-                    cmd.RF_SIGN_enable <= '1';
+                    cmd.RF_SIGN_enable <= '0';
                 elsif (status.IR(14 downto 12)= "101") then -- lhu
                     cmd.RF_SIZE_sel <= RF_SIZE_half;
-                    cmd.RF_SIGN_enable <= '0';
+                    cmd.RF_SIGN_enable <= '1';
                 else
                     state_d <= S_Error;
                 end if;
@@ -360,7 +361,6 @@ begin
 
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
-                state_d <= S_Fetch;
             when S_PRE_STORE => 
                 state_d <= S_STORE;
                 cmd.AD_Y_sel <= AD_Y_immS;

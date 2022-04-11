@@ -1,10 +1,6 @@
 # TAG = sw
 	.text
-	la x1, test
-	addi x31, x0, 12
-	sw x31, 0(x1)
-	addi x31, x31, 1
-	lw x31, 0(x1)
+	la x31, test
 	# max_cycle 50
 	# 0000000c
 	# 0000000d

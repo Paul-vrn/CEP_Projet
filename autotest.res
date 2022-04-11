@@ -9,7 +9,7 @@ bgeu        PASSED
 blt         PASSED
 bltu        PASSED
 bne         PASSED
-jalr        FAILED
+jalr        PASSED
 jal         PASSED
 lb          PASSED
 lbu         PASSED
@@ -33,6 +33,3 @@ srl         PASSED
 sub         PASSED
 xori        PASSED
 xor         PASSED
-sw          PASSED
-sh          PASSED
-sb          PASSED

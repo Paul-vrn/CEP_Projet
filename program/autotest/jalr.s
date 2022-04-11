@@ -1,11 +1,12 @@
 # TAG = jalr
 	.text
-	lui x6, 0
-	jalr x31, 12(x6) # adresse de x6 + 12 -> dernier addi
-	addi x31, x0, 12
-	addi x31, x0, 1
+	la x1, test
+	jalr x31, 0(x1)
+	addi x31, x31, 1
+end:
 	# max_cycle 50
 	# pout_start
-	# 00001008
-	# 00000001
+	# 00001010
 	# pout_end
+	.data
+test: .word 0x00001010

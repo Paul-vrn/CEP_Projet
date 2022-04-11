@@ -1,9 +1,10 @@
 # TAG = lbu
 	.text
-	addi x31, x0, 1
-	lbu x31, 0(x0)
+	la x28, test
+	lb x31, 0(x28)
 	# max_cycle 50
 	# pout_start
-	# 00000001
-	# 00000000
+	# 000000fe
 	# pout_end
+	.data
+test: .byte 0xfe
