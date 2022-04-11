@@ -179,8 +179,10 @@ begin
                         state_d <= S_AUIPC;
                     when "1100011" => 
                         state_d <= S_BRANCH;
-                    when "0000011" | "0100011" => -- LOAD | STORE
+                    when "0000011" => -- LOAD
                         state_d <= S_CALC_AD;
+                    when "0100011" =>
+                        state_d <- S_PRE_STORE; -- STORE
                     when "1101111" | "1100111" => -- jal | jalr
                         state_d <= S_JAL_JALR;
                     when others => 
@@ -362,10 +364,12 @@ begin
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
             when S_PRE_STORE => 
-                state_d <= S_STORE;
+                cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                cmd.PC_sel <= PC_from_pc;
+                cmd.PC_we <= '1';
                 cmd.AD_we <= '1';
                 cmd.AD_Y_sel <= AD_Y_immS;
-    
+                state_d <= S_STORE;
             when S_STORE =>
                 cmd.ADDR_sel <= ADDR_from_ad;
                 cmd.mem_ce <= '1';
