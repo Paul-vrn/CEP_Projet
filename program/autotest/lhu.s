@@ -1,10 +1,10 @@
 # TAG = lhu
 	.text
-	la x28, test
-	lh x31, 0(x28)
+	addi x1, x0, 7
+	auipc x1, 0
+	lw x31, (x1)
 	# max_cycle 50
 	# pout_start
-	# 0000ffff
+	# 00000097
 	# pout_end
-	.data
-test: .half 0xffff
+
