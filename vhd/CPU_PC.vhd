@@ -353,7 +353,7 @@ begin
                     cmd.RF_SIGN_enable <= '1';
                 elsif (status.IR(14 downto 12)= "101") then -- lhu
                     cmd.RF_SIZE_sel <= RF_SIZE_half;
-                    cmd.RF_SIGN_enable <= '1';
+                    cmd.RF_SIGN_enable <= '0';
                 else
                     state_d <= S_Error;
                 end if;
