@@ -344,16 +344,16 @@ begin
                     cmd.RF_SIZE_sel <= RF_SIZE_word;
                 elsif (status.IR(14 downto 12)= "000") then -- lb
                     cmd.RF_SIZE_sel <= RF_SIZE_byte;
-                    cmd.RF_SIGN_enable <= '0';
+                    cmd.RF_SIGN_enable <= '1';
                 elsif (status.IR(14 downto 12)= "100") then -- lbu
                     cmd.RF_SIZE_sel <= RF_SIZE_byte;
-                    cmd.RF_SIGN_enable <= '1';
+                    cmd.RF_SIGN_enable <= '0';
                 elsif (status.IR(14 downto 12)= "001") then -- lh
                     cmd.RF_SIZE_sel <= RF_SIZE_half;
-                    cmd.RF_SIGN_enable <= '0';
+                    cmd.RF_SIGN_enable <= '1';
                 elsif (status.IR(14 downto 12)= "101") then -- lhu
                     cmd.RF_SIZE_sel <= RF_SIZE_half;
-                    cmd.RF_SIGN_enable <= '1';
+                    cmd.RF_SIGN_enable <= '0';
                 else
                     state_d <= S_Error;
                 end if;
