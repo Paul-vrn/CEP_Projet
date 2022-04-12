@@ -41,7 +41,10 @@ architecture RTL of CPU_PC is
         S_PRE_LOAD,
         S_LOAD,
         S_PRE_STORE,
-        S_STORE
+        S_STORE,
+        S_INTERUPT,
+        S_CSR,
+        S_MRET
     );
 
     signal state_d, state_q : State_type;
@@ -128,8 +131,11 @@ begin
             when S_Fetch =>
                 -- IR <- mem_datain
                 cmd.IR_we <= '1';
-                state_d <= S_Decode;
-
+                if (status.IT = '0') then
+                    state_d <= S_Decode;
+                else
+                    state_d <= S_Interupt;
+                end if;
             when S_Decode =>
                 case status.IR(6 downto 0) is 
                     when "0110111" =>
@@ -185,6 +191,12 @@ begin
                         state_d <= S_PRE_STORE; -- STORE
                     when "1101111" | "1100111" => -- jal | jalr
                         state_d <= S_JAL_JALR;
+                    when "1110011" => -- CSR
+                        case status.IR(31 downto 25) is
+                            when "0011000" => -- mret
+                                state_d <= S_MRET;
+                            when others => -- CSRRW | CSRRS | CSRRS | CSRRC | CSRRWI| CSRRSI| CSRRCI
+                                state_d <= S_CSR;
                     when others => 
                         state_d <= S_Error;
                 end case;
@@ -296,7 +308,7 @@ begin
                 cmd.ADDR_sel <= ADDR_from_pc;
                 cmd.mem_we <= '0';
                 state_d <= S_Pre_Fetch;
-            when S_BRANCH =>                 
+            when S_BRANCH =>
                 cmd.ADDR_sel <= ADDR_from_pc;
                 if (status.jcond) then
                     cmd.TO_PC_Y_sel <= TO_PC_Y_immB;
@@ -402,8 +414,23 @@ begin
                 else
                     state_d <= S_Error;
                 end if;
+            when S_Interupt => 
+                cmd.PC_sel <= PC_mtvec;
+                cmd.PC_we <= '1';
+                cmd.cs.MEPC_sel <= MEPC_from_pc;
+                cmd.cs.MSTATUS_mie_set <= '0';
+                cmd.cs.MSTATUS_mie_reset <= '1';
+                state_d <= S_Pre_Fetch;
+            when S_MRET => 
+                cmd.PC_sel <= PC_from_mepc;
+                cmd.PC_we <= '1';
+                cmd.cs.MSTATUS_mie_set <= '1';
+                cmd.cs.MSTATUS_mie_reset <= '0';
+                state_d <= S_Pre_Fetch;
+
             when others => null;
-            end case;
+            
+                end case;
 
     end process FSM_comb;
 
