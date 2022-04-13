@@ -131,7 +131,7 @@ begin
             when S_Fetch =>
                 -- IR <- mem_datain
                 cmd.IR_we <= '1';
-                if (status.IT = '0') then
+                if (status.IT="0") then
                     state_d <= S_Decode;
                 else
                     state_d <= S_Interupt;
