@@ -197,6 +197,7 @@ begin
                                 state_d <= S_MRET;
                             when others => -- CSRRW | CSRRS | CSRRS | CSRRC | CSRRWI| CSRRSI| CSRRCI
                                 state_d <= S_CSR;
+                            end case;
                     when others => 
                         state_d <= S_Error;
                 end case;
