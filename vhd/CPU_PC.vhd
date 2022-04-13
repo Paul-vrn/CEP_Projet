@@ -131,10 +131,10 @@ begin
             when S_Fetch =>
                 -- IR <- mem_datain
                 cmd.IR_we <= '1';
-                if (status.IT="0") then
-                    state_d <= S_Decode;
-                else
+                if (status.IT) then
                     state_d <= S_Interupt;
+                else
+                    state_d <= S_Decode;
                 end if;
             when S_Decode =>
                 case status.IR(6 downto 0) is 
@@ -197,7 +197,7 @@ begin
                                 state_d <= S_MRET;
                             when others => -- CSRRW | CSRRS | CSRRS | CSRRC | CSRRWI| CSRRSI| CSRRCI
                                 state_d <= S_CSR;
-                            end case;
+                        end case;
                     when others => 
                         state_d <= S_Error;
                 end case;
