@@ -428,10 +428,29 @@ begin
                 cmd.cs.MSTATUS_mie_set <= '1';
                 cmd.cs.MSTATUS_mie_reset <= '0';
                 state_d <= S_Pre_Fetch;
+            when S_CSR =>
+                cmd.RF_we <= '1';
+                cmd.DATA_sel <= DATA_from_csr;
 
+                cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                cmd.PC_sel <= PC_from_pc;
+                cmd.PC_we <= '1';
+
+                cmd.mem_ce <= '1';
+                cmd.mem_we <= '0';
+            --    if (status.IR(14 downto 12) = "001") then -- csrrw
+            --    elsif (status.IR(14 downto 12) = "010") then -- csrrs
+            --    elsif (status.IR(14 downto 12) = "011") then -- csrrc
+            --    elsif (status.IR(14 downto 12) = "101") then -- csrrwi
+            --    elsif (status.IR(14 downto 12) = "110") then -- csrrsi
+            --    elsif (status.IR(14 downto 12) = "111") then -- csrrci
+            --    else
+            --        state_d <= S_Error;
+            --    end if;
+            --when S_CSRRW => 
             when others => null;
             
-                end case;
+        end case;
 
     end process FSM_comb;
 
