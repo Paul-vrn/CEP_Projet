@@ -9,6 +9,13 @@ bgeu        PASSED
 blt         PASSED
 bltu        PASSED
 bne         PASSED
+csrrci      PASSED
+csrrc       PASSED
+csrrsi      PASSED
+csrrs       PASSED
+csrrwi      PASSED
+csrrw       PASSED
+it          PASSED
 jalr        PASSED
 jal         PASSED
 lb          PASSED
