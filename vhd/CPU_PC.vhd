@@ -432,12 +432,9 @@ begin
                 cmd.RF_we <= '1';
                 cmd.DATA_sel <= DATA_from_csr;
 
-                cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
-                cmd.PC_sel <= PC_from_pc;
-                cmd.PC_we <= '1';
-
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
+                state_d <= S_MRET;
             --    if (status.IR(14 downto 12) = "001") then -- csrrw
             --    elsif (status.IR(14 downto 12) = "010") then -- csrrs
             --    elsif (status.IR(14 downto 12) = "011") then -- csrrc
