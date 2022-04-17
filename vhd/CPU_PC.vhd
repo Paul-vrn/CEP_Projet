@@ -437,22 +437,22 @@ begin
                 state_d <= S_Fetch;
                 if (status.IR(14 downto 12) = "001") then -- csrrw
                     cmd.cs.CSR_WRITE_mode <= WRITE_mode_simple;
-                    cmd.cs.TO_CSR_sel = TO_CSR_from_rs1
+                    cmd.cs.TO_CSR_sel <= TO_CSR_from_rs1;
                 elsif (status.IR(14 downto 12) = "010") then -- csrrs
                     cmd.cs.CSR_WRITE_mode <= WRITE_mode_set;
-                    cmd.cs.TO_CSR_sel = TO_CSR_from_rs1
+                    cmd.cs.TO_CSR_sel <= TO_CSR_from_rs1;
                 elsif (status.IR(14 downto 12) = "011") then -- csrrc
                     cmd.cs.CSR_WRITE_mode <= WRITE_mode_clear;
-                    cmd.cs.TO_CSR_sel = TO_CSR_from_rs1
+                    cmd.cs.TO_CSR_sel <= TO_CSR_from_rs1;
                 elsif (status.IR(14 downto 12) = "101") then -- csrrwi
                     cmd.cs.CSR_WRITE_mode <= WRITE_mode_simple;
-                    cmd.cs.TO_CSR_sel = TO_CSR_from_imm
+                    cmd.cs.TO_CSR_sel <= TO_CSR_from_imm;
                 elsif (status.IR(14 downto 12) = "110") then -- csrrsi
                     cmd.cs.CSR_WRITE_mode <= WRITE_mode_set;
-                    cmd.cs.TO_CSR_sel = TO_CSR_from_imm
+                    cmd.cs.TO_CSR_sel <= TO_CSR_from_imm;
                 elsif (status.IR(14 downto 12) = "111") then -- csrrci
                     cmd.cs.CSR_WRITE_mode <= WRITE_mode_clear;
-                    cmd.cs.TO_CSR_sel = TO_CSR_from_imm
+                    cmd.cs.TO_CSR_sel <= TO_CSR_from_imm;
                 else
                     state_d <= S_Error;
                 end if;
