@@ -192,8 +192,8 @@ begin
                     when "1101111" | "1100111" => -- jal | jalr
                         state_d <= S_JAL_JALR;
                     when "1110011" => -- CSR
-                        case status.IR(31 downto 25) is
-                            when "0011000" => -- mret
+                        case status.IR(14 downto 12) is
+                            when "000" => -- mret
                                 state_d <= S_MRET;
                             when others => -- CSRRW | CSRRS | CSRRS | CSRRC | CSRRWI| CSRRSI| CSRRCI
                                 state_d <= S_CSR;
@@ -432,9 +432,13 @@ begin
                 cmd.RF_we <= '1';
                 cmd.DATA_sel <= DATA_from_csr;
 
+                cmd.TO_PC_Y_sel <= TO_PC_Y_cst_x04;
+                cmd.PC_sel <= PC_from_pc;
+                cmd.PC_we <= '1';
+
                 cmd.mem_ce <= '1';
                 cmd.mem_we <= '0';
-                state_d <= S_Fetch;
+                state_d <= S_Pre_Fetch;
                 if (status.IR(14 downto 12) = "001") then -- csrrw
                     cmd.cs.CSR_WRITE_mode <= WRITE_mode_simple;
                     cmd.cs.TO_CSR_sel <= TO_CSR_from_rs1;
