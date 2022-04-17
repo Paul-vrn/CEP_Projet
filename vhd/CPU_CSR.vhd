@@ -58,20 +58,6 @@ architecture RTL of CPU_CSR is
     signal mstatus : w32;
 
 begin
-    process(clk)
-    begin
-        if rising_edge(clk) then
-            if (rst = '1') then 
-                mtvec <= w32_zero;
-                mepc  <= w32_zero;
-                mstatus <= w32_zero;
-                mie <= w32_zero;
-                mcause_q <= w32_zero;
-                mip <= w32_zero;
-            end if;
-        end if;
-    end process;
-
     to_csr <= rs1 when cmd.TO_CSR_sel = TO_CSR_from_rs1 else imm;  
 
     it <= irq and mstatus(3);
@@ -84,32 +70,41 @@ begin
             mip when cmd.CSR_sel = CSR_from_mip;
         
 
-    process (all)
+    process (clk)
     begin
-        if (cmd.CSR_we=CSR_mtvec) then
-            mtvec <= CSR_write(to_csr, mtvec, cmd.CSR_write_mode);
-        elsif (cmd.CSR_we=CSR_mepc) then
-            mepc  <= CSR_write(pc, mepc, cmd.CSR_write_mode);
-        elsif (cmd.CSR_we=CSR_mie) then
-            mie <= CSR_write(to_csr, mie, cmd.CSR_write_mode);
-        elsif (cmd.CSR_we=CSR_mstatus) then
-            mstatus <= CSR_write(to_csr, mstatus, cmd.CSR_write_mode);
-        end if;
+        if rising_edge(clk) then
+            if (cmd.CSR_we=CSR_mtvec) then
+                mtvec <= CSR_write(to_csr, mtvec, cmd.CSR_write_mode);
+            elsif (cmd.CSR_we=CSR_mepc) then
+                mepc  <= CSR_write(pc, mepc, cmd.CSR_write_mode);
+            elsif (cmd.CSR_we=CSR_mie) then
+                mie <= CSR_write(to_csr, mie, cmd.CSR_write_mode);
+            elsif (cmd.CSR_we=CSR_mstatus) then
+                mstatus <= CSR_write(to_csr, mstatus, cmd.CSR_write_mode);
+            end if;
+            if irq = '1' then
+                mcause_q <= mcause;
+            end if;
+    
+            mip(7) <= mtip;
+            mip(11) <= meip;
         
-        if irq = '1' then
-            mcause_q <= mcause;
-        end if;
+            if cmd.MSTATUS_mie_set = '1' then
+                mstatus(3) <= '1';
+            end if;
+            if cmd.MSTATUS_mie_reset = '1' then
+                mstatus(3) <= '0';
+            end if;
 
-        mip(7) <= mtip;
-        mip(11) <= meip;
-    
-        if cmd.MSTATUS_mie_set = '1' then
-            mstatus(3) <= '1';
+            if rst = '1' then
+                mcause_q <= w32_zero;
+                mip <= w32_zero;
+                mstatus <= w32_zero;
+                mie <= w32_zero;
+                mtvec <= w32_zero;
+                mepc <= w32_zero;
+            end if;
         end if;
-        if cmd.MSTATUS_mie_reset = '1' then
-            mstatus(3) <= '0';
-        end if;
-    
     end process;
 end architecture;
 

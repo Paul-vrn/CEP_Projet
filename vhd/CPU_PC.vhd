@@ -436,8 +436,6 @@ begin
                 cmd.PC_sel <= PC_from_pc;
                 cmd.PC_we <= '1';
 
-                cmd.mem_ce <= '1';
-                cmd.mem_we <= '0';
                 state_d <= S_Pre_Fetch;
                 if (status.IR(14 downto 12) = "001") then -- csrrw
                     cmd.cs.CSR_WRITE_mode <= WRITE_mode_simple;
