@@ -130,10 +130,11 @@ begin
             mstatus_q(3) <= '0';
         end if;
 
-        mtvec <= mtvec_q;
-        mepc  <= mepc_q;
-        mie  <= mie_q;
-        mip  <= mip_q;
+        mtvec <= mtvec_d;
+        mepc  <= mepc_d;
+        mie  <= mie_d;
+        mip  <= mip_d;
+        
     
     end process;
 end architecture;
