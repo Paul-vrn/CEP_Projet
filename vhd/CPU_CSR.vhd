@@ -80,27 +80,30 @@ begin
         end if;
     end process;
 
+    to_csr <= rs1 when cmd.TO_CSR_sel = TO_CSR_from_rs1 else imm;  
+
     mtvec <= mtvec_q;
     mepc  <= mepc_q;
     mie  <= mie_q;
+    mip  <= mip_q;
     it <= irq and mstatus_q(3);
 
-    to_csr <= rs1 when cmd.TO_CSR_sel = TO_CSR_from_rs1 else imm;  
 
     csr <= mcause_q when cmd.CSR_sel = CSR_from_mcause else
-            mepc when cmd.CSR_sel = CSR_from_mepc else
-            mtvec when cmd.CSR_sel = CSR_from_mtvec else
+            mepc_q when cmd.CSR_sel = CSR_from_mepc else
+            mtvec_q when cmd.CSR_sel = CSR_from_mtvec else
             mstatus_q when cmd.CSR_sel = CSR_from_mstatus else
-            mie when cmd.CSR_sel = CSR_from_mie else
-            mip when cmd.CSR_sel = CSR_from_mip;
+            mie_q when cmd.CSR_sel = CSR_from_mie else
+            mip_q when cmd.CSR_sel = CSR_from_mip;
         
 
     process (all)
     begin
         mtvec_d <= mtvec_q;
         mepc_d  <= mepc_q;
-        mie_d   <= mie_q;
         mstatus_d <= mstatus_q;
+        mie_d   <= mie_q;
+        mip_q <= mip_q;
         if irq = '1' then
             mcause_d <= mcause_q;
         end if;
