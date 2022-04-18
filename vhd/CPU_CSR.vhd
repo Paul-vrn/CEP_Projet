@@ -68,7 +68,7 @@ begin
             mie when cmd.CSR_sel = CSR_from_mie else
             mip when cmd.CSR_sel = CSR_from_mip;
         
-            it <= irq and mstatus(3);
+    it <= irq and mstatus(3);
 
     process (clk)
     begin

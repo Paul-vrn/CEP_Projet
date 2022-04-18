@@ -437,6 +437,28 @@ begin
                 cmd.PC_we <= '1';
 
                 state_d <= S_Pre_Fetch;
+--12
+                if (status.IR(31 downto 20) = "001100000000") then -- mstatus (0x300)
+                    cmd.cs.CSR_sel <= CSR_from_mstatus;
+                    cmd.cs.CSR_we <= CSR_mstatus;
+                elsif (status.IR(31 downto 20) = "001100000100") then -- mie (0x304)
+                    cmd.cs.CSR_sel <= CSR_from_mie;
+                    cmd.cs.CSR_we <= CSR_mie;
+                elsif (status.IR(31 downto 20) = "001100000101") then -- mtvec (0x305)
+                    cmd.cs.CSR_sel <= CSR_from_mtvec;
+                    cmd.cs.CSR_we <= CSR_mtvec;
+                elsif (status.IR(31 downto 20) = "001101000001") then -- mepc (0x341)
+                    cmd.cs.CSR_sel <= CSR_from_mepc;
+                    cmd.cs.CSR_we <= CSR_mepc;
+                    elsif (status.IR(31 downto 20) = "001101000010") then -- mcause (0x342)
+                    cmd.cs.CSR_sel <= CSR_from_mcause;
+                elsif (status.IR(31 downto 20) = "001101000100") then -- mip (0x344)
+                    cmd.cs.CSR_sel <= CSR_from_mip;
+                else
+                    state_d <= S_Error;
+                end if;
+
+
                 if (status.IR(14 downto 12) = "001") then -- csrrw
                     cmd.cs.CSR_WRITE_mode <= WRITE_mode_simple;
                     cmd.cs.TO_CSR_sel <= TO_CSR_from_rs1;
