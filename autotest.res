@@ -13,8 +13,8 @@ csrrci      PASSED
 csrrc       PASSED
 csrrsi      PASSED
 csrrs       PASSED
-csrrwi      TIMEOUT
-csrrw       TIMEOUT
+csrrwi      PASSED
+csrrw       PASSED
 it          PASSED
 jalr        PASSED
 jal         PASSED

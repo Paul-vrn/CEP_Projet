@@ -418,6 +418,8 @@ begin
             when S_Interupt => 
                 cmd.PC_sel <= PC_mtvec;
                 cmd.PC_we <= '1';
+                cmd.cs.CSR_sel <= CSR_from_mepc;
+                cmd.cs.CSR_we <= CSR_mepc;
                 cmd.cs.MEPC_sel <= MEPC_from_pc;
                 cmd.cs.MSTATUS_mie_set <= '0';
                 cmd.cs.MSTATUS_mie_reset <= '1';
@@ -437,7 +439,6 @@ begin
                 cmd.PC_we <= '1';
 
                 state_d <= S_Pre_Fetch;
---12
                 if (status.IR(31 downto 20) = "001100000000") then -- mstatus (0x300)
                     cmd.cs.CSR_sel <= CSR_from_mstatus;
                     cmd.cs.CSR_we <= CSR_mstatus;
