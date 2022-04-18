@@ -459,8 +459,6 @@ begin
                 else
                     state_d <= S_Error;
                 end if;
-
-
                 if (status.IR(14 downto 12) = "001") then -- csrrw
                     cmd.cs.CSR_WRITE_mode <= WRITE_mode_simple;
                     cmd.cs.TO_CSR_sel <= TO_CSR_from_rs1;
