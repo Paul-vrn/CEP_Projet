@@ -450,6 +450,7 @@ begin
                 elsif (status.IR(31 downto 20) = "001101000001") then -- mepc (0x341)
                     cmd.cs.CSR_sel <= CSR_from_mepc;
                     cmd.cs.CSR_we <= CSR_mepc;
+                    cmd.cs.MEPC_sel <= MEPC_from_csr;
                     elsif (status.IR(31 downto 20) = "001101000010") then -- mcause (0x342)
                     cmd.cs.CSR_sel <= CSR_from_mcause;
                 elsif (status.IR(31 downto 20) = "001101000100") then -- mip (0x344)
