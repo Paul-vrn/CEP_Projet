@@ -5,7 +5,7 @@
 	csrrs x0, mie, x28 # csr = "101"
 	csrrs x31, mie, x29 # csr = "101" || "10" = "111" 
 	csrrs x31, mie, x0
-	# max_cycle 50
+	# max_cycle 100
 	# pout_start
 	# 00000005
 	# 00000007

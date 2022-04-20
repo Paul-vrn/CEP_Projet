@@ -5,7 +5,7 @@
 	csrrc x0, mie, x28 # csr = "101"
 	csrrc x31, mie, x29 # csr = "101" and not("10") = "001" 
 	csrrc x31, mie, x0
-	# max_cycle 50
+	# max_cycle 100
 	# pout_start
 	# 00000005
 	# 00000001
