@@ -43,10 +43,3 @@ sub         PASSED
 sw          PASSED
 xori        PASSED
 xor         PASSED
-csrrw       PASSED
-csrrwi      PASSED
-csrrs       PASSED
-csrrsi      PASSED
-csrrc       PASSED
-csrrci      PASSED
-it          PASSED
