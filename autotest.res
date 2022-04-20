@@ -49,3 +49,4 @@ csrrs       PASSED
 csrrsi      PASSED
 csrrc       PASSED
 csrrci      PASSED
+it          PASSED
